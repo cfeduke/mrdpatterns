@@ -1,0 +1,8 @@
+#!/bin/bash
+
+OUTDIR=out
+USER=`whoami`
+DATADIR=/Users/$USER/Downloads/stack-overflow-dump-2009-09
+
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/$OUTDIR
+$HADOOP_HOME/bin/hadoop jar ../target/mrdpatterns-1.0-SNAPSHOT-job.jar file://$DATADIR/comments.xml $OUTDIR

@@ -1,0 +1,3 @@
+#!/bin/bash
+USER=`whoami`
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/   
