@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                         http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
@@ -23,19 +22,22 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-core</artifactId>
-      <version>1.0.3</version>
+      <version>1.1.1</version>
       <scope>provided</scope>
     </dependency>
-    <!--
-         Add project dependencies here. The archetype plugin will
-         include all dependencies from the "compile" scope (which is
-	 the default) in the job jar's "lib" directory.
-    -->
+    <!-- Add project dependencies here. The archetype plugin will include all
+      dependencies from the "compile" scope (which is the default) in the job jar's
+      "lib" directory. -->
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>1.9.0</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+      <version>1.3</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
