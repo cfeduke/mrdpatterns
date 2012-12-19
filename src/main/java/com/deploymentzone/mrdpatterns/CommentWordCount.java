@@ -31,8 +31,7 @@ public class CommentWordCount {
         return;
       }
 
-      txt = StringEscapeUtils.unescapeHtml(txt.toLowerCase());
-      txt = txt.replaceAll("'", "").replaceAll("[^a-zA-Z]", " ");
+      txt = txt.toLowerCase().replaceAll("'", "").replaceAll("[^a-zA-Z]", " ");
       StringTokenizer itr = new StringTokenizer(txt);
       while (itr.hasMoreTokens()) {
         word.set(itr.nextToken());

@@ -3,6 +3,8 @@ package com.deploymentzone.mrdpatterns.utils;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringEscapeUtils;
+
 public class MRDPUtils {
   public static Map<String, String> transformXmlToMap(String xml) {
     Map<String,String> map = new HashMap<String,String>();
@@ -10,7 +12,7 @@ public class MRDPUtils {
       String[] tokens = xml.trim().substring(5, xml.trim().length() - 3).split("\"");
       for (int i = 0; i < tokens.length; i += 2) {
         String key = tokens[i].trim();
-        String val = tokens[i+1].trim();
+        String val = StringEscapeUtils.unescapeHtml(tokens[i+1].trim());
 
         map.put(key.substring(0, key.length() - 1), val);
       }
