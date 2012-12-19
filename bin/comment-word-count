@@ -5,4 +5,5 @@ USER=`whoami`
 DATADIR=/Users/$USER/Downloads/stack-overflow-dump-2009-09
 
 $HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/$OUTDIR
-$HADOOP_HOME/bin/hadoop jar ../target/mrdpatterns-1.0-SNAPSHOT-job.jar file://$DATADIR/comments.xml $OUTDIR
+$HADOOP_HOME/bin/hadoop jar ./target/mrdpatterns-1.0-SNAPSHOT.jar com.deploymentzone.mrdpatterns.CommentWordCount file://$DATADIR/comments.xml $OUTDIR
+$HADOOP_HOME/bin/hadoop fs -cat /user/$USER/$OUTDIR/part-r-00000 | sort -k2gr | head -n50
