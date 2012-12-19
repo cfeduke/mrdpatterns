@@ -1,0 +1,10 @@
+#!/bin/bash
+
+OUTDIR=out
+USER=`whoami`
+DATADIR=/Users/$USER/Downloads/stack-overflow-dump-2009-09
+
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/$OUTDIR
+$HADOOP_HOME/bin/hadoop jar ./target/mrdpatterns-1.0-SNAPSHOT.jar com.deploymentzone.mrdpatterns.CommentCountByUser file://$DATADIR/comments.xml $OUTDIR
+# the top 50 commenting users
+$HADOOP_HOME/bin/hadoop fs -cat /user/$USER/$OUTDIR/part-r-00000 | sort -k4gr | head -n50
