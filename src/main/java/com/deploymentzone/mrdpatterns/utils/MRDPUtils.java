@@ -1,5 +1,6 @@
 package com.deploymentzone.mrdpatterns.utils;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,5 +27,11 @@ public class MRDPUtils {
     }
 
     return map;
+  }
+
+  public final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
+
+  public static boolean isNullOrEmpty(String str) {
+    return str == null || str.length() == 0;
   }
 }

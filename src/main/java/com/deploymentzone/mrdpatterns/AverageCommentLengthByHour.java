@@ -1,6 +1,6 @@
 package com.deploymentzone.mrdpatterns;
 
-import static com.deploymentzone.mrdpatterns.utils.MRDPUtils.DATE_FORMAT;
+import static com.deploymentzone.mrdpatterns.utils.MRDPUtils.isNullOrEmpty;
 import static com.deploymentzone.mrdpatterns.utils.MRDPUtils.transformXmlToMap;
 
 import java.io.IOException;
@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -21,23 +22,27 @@ import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import com.deploymentzone.mrdpatterns.io.MinMaxCountTupleDate;
+import com.deploymentzone.mrdpatterns.io.CountAverageTuple;
+import static com.deploymentzone.mrdpatterns.utils.MRDPUtils.*;
 
-public class CommentCountByUser extends Configured implements Tool {
-  public static class MinMaxCountMapper extends Mapper<Object, Text, Text, MinMaxCountTupleDate> {
+public class AverageCommentLengthByHour extends Configured implements Tool {
+  public static class AverageMapper extends Mapper<Object, Text, IntWritable, CountAverageTuple> {
 
-    private Text outUserId = new Text();
-    private MinMaxCountTupleDate outTuple = new MinMaxCountTupleDate();
+    private IntWritable outHour = new IntWritable();
+    private CountAverageTuple outTuple = new CountAverageTuple();
 
+    @SuppressWarnings("deprecation")
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
       Map<String,String> parsed = transformXmlToMap(value.toString());
-      String strDate = parsed.get("CreationDate");
-      String userId = parsed.get("UserId");
-      Date creationDate;
 
-      if (userId == null) {
+      String strDate = parsed.get("CreationDate");
+      String text = parsed.get("Text");
+
+      if (isNullOrEmpty(strDate) || isNullOrEmpty(text)) {
         return;
       }
+
+      Date creationDate;
 
       try {
         creationDate = DATE_FORMAT.parse(strDate);
@@ -46,35 +51,37 @@ public class CommentCountByUser extends Configured implements Tool {
         return;
       }
 
-      outTuple.set(creationDate, creationDate, 1);
+      outHour.set(creationDate.getHours());
 
-      outUserId.set(userId);
+      outTuple.set(1, text.length());
 
-      context.write(outUserId, outTuple);
+      context.write(outHour, outTuple);
     }
   }
 
-  public static class MinMaxCountReducer extends Reducer<Text, MinMaxCountTupleDate, Text, MinMaxCountTupleDate> {
+  public static class AverageReducer extends Reducer<IntWritable, CountAverageTuple, IntWritable, CountAverageTuple> {
 
-    private MinMaxCountTupleDate result = new MinMaxCountTupleDate();
+    private CountAverageTuple result = new CountAverageTuple();
 
-    public void reduce(Text key, Iterable<MinMaxCountTupleDate> values, Context context) throws IOException, InterruptedException {
-      result.reset();
+    public void reduce(IntWritable key, Iterable<CountAverageTuple> values, Context context) throws IOException, InterruptedException {
 
       int sum = 0;
+      float count = 0;
 
-      for (MinMaxCountTupleDate val : values) {
-        result.deriveMinMax(val);
-        sum += val.getCount();
+      for (CountAverageTuple val : values) {
+        sum += val.getCount() * val.getAverage();
+        count += val.getCount();
       }
 
       result.setCount(sum);
+      result.setAverage(sum / count);
+
       context.write(key, result);
     }
   }
 
   public static void main(String[] args) throws Exception {
-    int res = ToolRunner.run(new Configuration(), new CommentCountByUser(), args);
+    int res = ToolRunner.run(new Configuration(), new AverageCommentLengthByHour(), args);
     System.exit(res);
   }
 
@@ -83,18 +90,18 @@ public class CommentCountByUser extends Configured implements Tool {
     Configuration conf = new Configuration();
     String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
     if (otherArgs.length != 2) {
-      System.err.println("Usage: CommentCountByUser <in> <out>");
+      System.err.println("Usage: AverageCommentLengthByHour <in> <out>");
       ToolRunner.printGenericCommandUsage(System.err);
       System.exit(2);
     }
 
-    Job job = new Job(conf, "StackOverflow Comment Count by User");
-    job.setJarByClass(CommentCountByUser.class);
-    job.setMapperClass(MinMaxCountMapper.class);
-    job.setCombinerClass(MinMaxCountReducer.class);
-    job.setReducerClass(MinMaxCountReducer.class);
-    job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(MinMaxCountTupleDate.class);
+    Job job = new Job(conf, "StackOverflow Average Comment Length By Hour");
+    job.setJarByClass(AverageCommentLengthByHour.class);
+    job.setMapperClass(AverageMapper.class);
+    job.setCombinerClass(AverageReducer.class);
+    job.setReducerClass(AverageReducer.class);
+    job.setOutputKeyClass(IntWritable.class);
+    job.setOutputValueClass(CountAverageTuple.class);
     FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
     FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]));
     boolean success = job.waitForCompletion(true);
