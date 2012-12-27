@@ -29,6 +29,11 @@
       dependencies from the "compile" scope (which is the default) in the job jar's
       "lib" directory. -->
     <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>1.7.1</version>
+    </dependency>
+    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>1.9.0</version>
