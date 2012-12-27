@@ -1,0 +1,6 @@
+#!/bin/bash
+
+source ./bin/env.sh
+
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/$OUTDIR
+$HADOOP_HOME/bin/hadoop jar ./target/mrdpatterns-1.0-SNAPSHOT.jar com.deploymentzone.mrdpatterns.NumberOfUsersByState file://$DATADIR/users.xml $OUTDIR

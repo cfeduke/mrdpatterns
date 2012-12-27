@@ -1,6 +1,6 @@
 package com.deploymentzone.mrdpatterns;
 
-import static com.deploymentzone.mrdpatterns.ResourceHelper.getLinesFromResourceFile;
+import static com.deploymentzone.mrdpatterns.ResourceHelper.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -27,7 +27,7 @@ public class WikipediaUrlMapperTest {
   @Before
   public void setUp() throws IOException {
     mapper = new WikipediaUrlMapper();
-    inputXml = getLinesFromResourceFile(this.getClass(), "posts_with_wikipedia_urls.xml").get(0);
+    inputXml = getFirstLineFromResourceFile(this.getClass(), "posts_with_wikipedia_urls.xml");
   }
 
   @Test
