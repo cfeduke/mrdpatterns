@@ -1,7 +1,8 @@
 package com.deploymentzone.mrdpatterns;
 
 import java.io.IOException;
-import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -17,17 +18,19 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 public class DistributedGrep extends Configured implements Tool {
+  public static final String REGEX_KEY = "com.deploymentzone.mrdpatterns.regex";
   public static class GrepMapper extends Mapper<Object, Text, NullWritable, Text> {
-    private String mapRegex = null;
+    private Pattern pattern = null;
 
     @Override
     public void setup(Context context) throws IOException, InterruptedException {
-      mapRegex = context.getConfiguration().get("com.deploymentzone.mrdpatterns.regex");
+      pattern = Pattern.compile(context.getConfiguration().get(REGEX_KEY, ""));
     }
 
     @Override
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-      if (value.toString().matches(mapRegex)) {
+      Matcher matcher = pattern.matcher(value.toString());
+      if (matcher.find()) {
         context.write(NullWritable.get(), value);
       }
     }
@@ -53,7 +56,7 @@ public class DistributedGrep extends Configured implements Tool {
     job.setMapperClass(GrepMapper.class);
     job.setOutputKeyClass(NullWritable.class);
     job.setOutputValueClass(Text.class);
-    job.getConfiguration().set("com.deploymentzone.mrdpatterns.regex", otherArgs[0]);
+    job.getConfiguration().set(REGEX_KEY, otherArgs[0]);
     FileInputFormat.addInputPath(job, new Path(otherArgs[1]));
     FileOutputFormat.setOutputPath(job, new Path(otherArgs[2]));
     boolean success = job.waitForCompletion(true);
