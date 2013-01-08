@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source ./bin/env.sh
+
+input_file=$DATADIR/comments.xml
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/$OUTDIR
+$HADOOP_HOME/bin/hadoop jar ./target/mrdpatterns-1.0-SNAPSHOT.jar com.deploymentzone.mrdpatterns.SimpleRandomSampling 2.5 file://$input_file $OUTDIR
+$HADOOP_HOME/bin/hadoop fs -cat /user/$USER/$OUTDIR/part-r-00000 | echo "Filtered: `wc -l` Original: `cat $input_file | wc -l`"
