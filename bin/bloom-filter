@@ -1,0 +1,34 @@
+#!/bin/bash
+
+source ./bin/env.sh
+
+# the bloom filter first needs to be trained and stored in HDFS so all Hadoop nodes
+# can access it (i.e., a distributed cache) - even though we're operating in single
+# node mode this is still a good practice
+
+# the filter will be trained on the results of comment-word-count M/R job where
+# words appeared between 3000 and 5000 times in the corpus; we will then filter for
+# posts that probably contain at least one of those words
+
+# there were 385 entries for the comments_wc_3000_5000.tar.gz file (based on wc -l)
+# the larger the false positives the faster later calculations (filtering) will run
+
+# arguments are:
+#   0: input file (resources/comments_wc_3000_5000.tar.gz)
+#   1: approx. number of items in the filter (385)
+#   2: false positive rate (0.02) e.g., 2%
+#   3: output file (hdfs://user/$USER/bloom
+
+bloom_filter_file=/user/$USER/comment_bloom_filter
+bloom_input_file=comments_wc_3000_5000.tar.gz
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash $bloom_filter_file
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/$bloom_input_file
+$HADOOP_HOME/bin/hadoop fs -copyFromLocal ./resources/$bloom_input_file /user/$USER/$bloom_input_file
+java -classpath "`$HADOOP_HOME/bin/hadoop classpath`:./target/mrdpatterns-1.0-SNAPSHOT.jar" com.deploymentzone.mrdpatterns.BloomFilterDriver \
+  "/user/$USER/$bloom_input_file" 385 0.02 "hdfs://$bloom_filter_file"
+$HADOOP_HOME/bin/hadoop fs -ls $bloom_filter_file
+
+input_file=$DATADIR/posts.xml
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/$OUTDIR
+#$HADOOP_HOME/bin/hadoop jar ./target/mrdpatterns-1.0-SNAPSHOT.jar com.deploymentzone.mrdpatterns.BloomFilter 2.5 file://$input_file $OUTDIR
+#$HADOOP_HOME/bin/hadoop fs -cat /user/$USER/$OUTDIR/part-r-00000 | echo "Filtered: `wc -l` Original: `cat $input_file | wc -l`"
