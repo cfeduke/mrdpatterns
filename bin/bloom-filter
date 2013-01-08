@@ -30,5 +30,7 @@ $HADOOP_HOME/bin/hadoop fs -ls $bloom_filter_file
 
 input_file=$DATADIR/posts.xml
 $HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/$OUTDIR
-#$HADOOP_HOME/bin/hadoop jar ./target/mrdpatterns-1.0-SNAPSHOT.jar com.deploymentzone.mrdpatterns.BloomFilter 2.5 file://$input_file $OUTDIR
-#$HADOOP_HOME/bin/hadoop fs -cat /user/$USER/$OUTDIR/part-r-00000 | echo "Filtered: `wc -l` Original: `cat $input_file | wc -l`"
+$HADOOP_HOME/bin/hadoop jar ./target/mrdpatterns-1.0-SNAPSHOT.jar com.deploymentzone.mrdpatterns.BloomFilter \
+  "hdfs://$bloom_filter_file#comment_bloom_filter" \
+  file://$input_file $OUTDIR
+$HADOOP_HOME/bin/hadoop fs -cat /user/$USER/$OUTDIR/part-r-00000 | echo "Filtered: `wc -l` Original: `cat $input_file | wc -l`"
