@@ -1,0 +1,39 @@
+#!/bin/bash
+
+source ./bin/env.sh
+
+# first run a M/R job to get all user IDs where reputation >= 1500
+# then create a bloom filter for these user IDs
+# finally get a cross section of comments made by the users selected
+
+# arguments are:
+#   0: input file (resources/comments_wc_3000_5000.tar.gz)
+#   1: approx. number of items in the filter (385)
+#   2: false positive rate (0.02) e.g., 2%
+#   3: output file (hdfs://user/$USER/bloom
+
+bloom_filter_file=/user/$USER/bloom_user_ids_rep_over_1500
+bloom_input_file=user_ids_rep_over_1500
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash $bloom_filter_file
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/$bloom_input_file
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/out_user_id_bloom
+
+$HADOOP_HOME/bin/hadoop jar ./target/mrdpatterns-1.0-SNAPSHOT.jar com.deploymentzone.mrdpatterns.UserIdsByReputation \
+  1500 \
+  file://$DATADIR/users.xml \
+  out_user_id_bloom
+
+# calculate the estimated # of items
+n=`$HADOOP_HOME/bin/hadoop fs -cat /user/$USER/out_user_id_bloom/part-r-00000 | wc -l`
+# create the bloom filter
+java -classpath "`$HADOOP_HOME/bin/hadoop classpath`:./target/mrdpatterns-1.0-SNAPSHOT.jar" com.deploymentzone.mrdpatterns.BloomFilterDriver \
+  "/user/$USER/out_user_id_bloom/part-r-00000" $n 0.02 "hdfs://$bloom_filter_file"
+$HADOOP_HOME/bin/hadoop fs -ls $bloom_filter_file
+
+input_file=$DATADIR/comments.xml
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/$OUTDIR
+$HADOOP_HOME/bin/hadoop jar ./target/mrdpatterns-1.0-SNAPSHOT.jar com.deploymentzone.mrdpatterns.BloomFilterCommentsByUserId \
+  "hdfs://$bloom_filter_file" \
+  file://$input_file \
+  $OUTDIR
+$HADOOP_HOME/bin/hadoop fs -cat /user/$USER/$OUTDIR/part-r-00000 | echo "Filtered: `wc -l` Original: `cat $input_file | wc -l`"

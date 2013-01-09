@@ -3,10 +3,14 @@ package com.deploymentzone.mrdpatterns.utils;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
 public class MRDPUtils {
+  private static final Pattern INTEGER = Pattern.compile("\\d+");
+
   public static Map<String, String> transformXmlToMap(String xml) {
     Map<String,String> map = new HashMap<String,String>();
     try {
@@ -34,4 +38,10 @@ public class MRDPUtils {
   public static boolean isNullOrEmpty(String str) {
     return str == null || str.length() == 0;
   }
+
+  public static boolean isInteger(String str) {
+    Matcher is = INTEGER.matcher(str);
+    return is.matches();
+  }
+
 }

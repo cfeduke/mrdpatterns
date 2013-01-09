@@ -1,6 +1,12 @@
 package com.deploymentzone.mrdpatterns;
 
+import static java.lang.Math.ceil;
+import static java.lang.Math.log;
+import static java.lang.Math.pow;
+import static java.lang.Math.round;
+
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.zip.GZIPInputStream;
 
@@ -12,7 +18,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.bloom.BloomFilter;
 import org.apache.hadoop.util.bloom.Key;
 import org.apache.hadoop.util.hash.Hash;
-import static java.lang.Math.*;
 
 public class BloomFilterDriver {
   public static void main(String[] args) throws Exception {
@@ -39,7 +44,15 @@ public class BloomFilterDriver {
     FileSystem fs = FileSystem.get(new Configuration());
 
     for (FileStatus status : fs.listStatus(inputFile)) {
-      BufferedReader rdr = new BufferedReader(new InputStreamReader(new GZIPInputStream(fs.open(status.getPath()))));
+      InputStream stream;
+      if (status.getPath().toString().toLowerCase().endsWith("gz")) {
+        stream = new GZIPInputStream(fs.open(status.getPath()));
+      }
+      else {
+        stream = fs.open(status.getPath());
+      }
+
+      BufferedReader rdr = new BufferedReader(new InputStreamReader(stream));
       System.out.println("Reading " + status.getPath());
       while ((line = rdr.readLine()) != null) {
         filter.add(new Key(line.getBytes()));
