@@ -1,0 +1,9 @@
+#!/bin/bash
+
+source ./bin/env.sh
+INDIR=post-comment
+$HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/$OUTDIR
+$HADOOP_HOME/bin/hadoop jar ./target/mrdpatterns-1.0-SNAPSHOT.jar com.deploymentzone.mrdpatterns.QuestionAnswerBuilder \
+  hdfs://localhost/user/cfeduke/$INDIR/part-r-00000 \
+  $OUTDIR
+$HADOOP_HOME/bin/hadoop fs -tail /user/$USER/$OUTDIR/part-r-00000 
