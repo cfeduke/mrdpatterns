@@ -1,7 +1,7 @@
 package com.deploymentzone.mrdpatterns.domain;
 
 import com.deploymentzone.mrdpatterns.utils.MRDPUtils;
-
+/* could have bypassed all this malarkey with custom Writables */
 public class ReduceSideDataDiscriminator {
   public enum Type {
     POST, COMMENT, QUESTION, ANSWER, UNKNOWN, INVALID;

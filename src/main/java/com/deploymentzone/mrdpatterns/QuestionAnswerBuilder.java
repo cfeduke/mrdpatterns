@@ -52,7 +52,7 @@ public class QuestionAnswerBuilder extends Configured implements Tool {
     return job.waitForCompletion(true) ? 0 : 2;
   }
 
-  public static abstract class HierarchyMapper extends Mapper<Object, Text, IntWritable, Text> {
+  public static class HierarchyMapper extends Mapper<Object, Text, IntWritable, Text> {
     private IntWritable outKey = new IntWritable();
     private Text outValue = new Text();
 

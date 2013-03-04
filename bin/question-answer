@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# requires bin/post-comment-hierarchy to be ran first as its output is this job's input
 source ./bin/env.sh
 INDIR=post-comment
 $HADOOP_HOME/bin/hadoop fs -rmr -skipTrash /user/$USER/$OUTDIR
