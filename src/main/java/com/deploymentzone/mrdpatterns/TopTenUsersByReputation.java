@@ -24,7 +24,7 @@ import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import com.sun.tools.javac.util.Pair;
+import com.deploymentzone.mrdpatterns.domain.Pair;
 
 public class TopTenUsersByReputation extends Configured implements Tool {
   /**
@@ -101,10 +101,10 @@ public class TopTenUsersByReputation extends Configured implements Tool {
   {
     public TextArrayWritable() { super(Text.class); }
     public TextArrayWritable(Pair<Writable, Writable> pair) {
-      super(Text.class, new Text[] { (Text)pair.fst, (Text)pair.snd });
+      super(Text.class, new Text[] { (Text)pair.getFirst(), (Text)pair.getSecond() });
     }
     public static TextArrayWritable from(Pair<String,String> pair) {
-      Pair<Writable, Writable> p = new Pair<Writable, Writable>(new Text(pair.fst), new Text(pair.snd));
+      Pair<Writable, Writable> p = new Pair<Writable, Writable>(new Text(pair.getFirst()), new Text(pair.getSecond()));
       return new TextArrayWritable(p);
     }
 
